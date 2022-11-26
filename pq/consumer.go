@@ -69,7 +69,6 @@ func MustNewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) queue.Mes
 }
 
 func NewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) (queue.MessageQueue, error) {
-
 	var options queueOptions
 	for _, opt := range opts {
 		opt(&options)
@@ -102,12 +101,13 @@ func newPulsarQueue(c Conf, handler ConsumeHandler, options queueOptions) queue.
 		},
 	)
 
+	messageChannel := make(chan pulsar.ConsumerMessage)
 	consumer, err := client.Subscribe(
 		pulsar.ConsumerOptions{
 			Topic:            c.Topic,
 			Type:             pulsar.Shared,
 			SubscriptionName: c.SubscriptionName,
-			//MessageChannel:   channel,
+			MessageChannel:   messageChannel,
 		},
 	)
 
@@ -119,7 +119,7 @@ func newPulsarQueue(c Conf, handler ConsumeHandler, options queueOptions) queue.
 		c:                c,
 		consumer:         consumer,
 		handler:          handler,
-		channel:          make(chan pulsar.ConsumerMessage),
+		channel:          messageChannel,
 		consumerRoutines: threading.NewRoutineGroup(),
 		metrics:          options.metrics,
 	}

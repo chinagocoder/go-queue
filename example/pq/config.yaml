@@ -1,0 +1,7 @@
+Name: pulsar
+Brokers:
+  - 127.0.0.1:6650
+Topic: topic_message
+Conns: 1
+Processors: 1
+SubscriptionName: topic_message
