@@ -24,7 +24,7 @@ type message struct {
 func main() {
 	pusher := pq.NewPusher(
 		[]string{
-			"114.115.255.244:6650",
+			"127.0.0.1:6650",
 		}, "topic_message",
 	)
 
