@@ -59,7 +59,7 @@ type (
 	}
 )
 
-func MustNewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) queue.MessageQueue {
+func MustNewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) *pulsarQueues {
 	q, err := NewQueue(c, handler, opts...)
 	if err != nil {
 		log.Fatal(err)
@@ -68,7 +68,7 @@ func MustNewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) queue.Mes
 	return q
 }
 
-func NewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) (queue.MessageQueue, error) {
+func NewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) (*pulsarQueues, error) {
 	var options queueOptions
 	for _, opt := range opts {
 		opt(&options)
@@ -80,7 +80,7 @@ func NewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) (queue.Messag
 		c.Conns = 1
 	}
 
-	q := pulsarQueues{
+	q := &pulsarQueues{
 		group: service.NewServiceGroup(),
 	}
 	for i := 0; i < c.Conns; i++ {
@@ -90,7 +90,26 @@ func NewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) (queue.Messag
 	return q, nil
 }
 
-func newPulsarQueue(c Conf, handler ConsumeHandler, options queueOptions) queue.MessageQueue {
+func (q *pulsarQueues) AddQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) error {
+	var options queueOptions
+	for _, opt := range opts {
+		opt(&options)
+	}
+
+	ensureQueueOptions(c, &options)
+
+	if c.Conns < 1 {
+		c.Conns = 1
+	}
+
+	for i := 0; i < c.Conns; i++ {
+		q.queues = append(q.queues, newPulsarQueue(c, handler, options))
+	}
+
+	return nil
+}
+
+func newPulsarQueue(c Conf, handler ConsumeHandler, options queueOptions) *pulsarQueue {
 
 	url := fmt.Sprintf("pulsar://%s", strings.Join(c.Brokers, ","))
 	client, err := pulsar.NewClient(
@@ -135,14 +154,14 @@ func (q *pulsarQueue) Stop() {
 	logx.Close()
 }
 
-func (q pulsarQueues) Start() {
+func (q *pulsarQueues) Start() {
 	for _, each := range q.queues {
 		q.group.Add(each)
 	}
 	q.group.Start()
 }
 
-func (q pulsarQueues) Stop() {
+func (q *pulsarQueues) Stop() {
 	q.group.Stop()
 }
 
