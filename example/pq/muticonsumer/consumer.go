@@ -17,7 +17,9 @@ func main() {
 
 	fmt.Println(c)
 
-	q := pq.MustNewQueue(c.PulsarTopic1, pq.WithHandle(func(k, v string) error {
+	q := pq.MustNewQueue()
+
+	q.AddQueue(c.PulsarTopic1, pq.WithHandle(func(k, v string) error {
 		fmt.Printf("=> %s\n", v)
 		return nil
 	}))

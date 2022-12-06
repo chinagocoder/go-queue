@@ -59,12 +59,10 @@ type (
 	}
 )
 
-func MustNewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) *pulsarQueues {
-	q, err := NewQueue(c, handler, opts...)
-	if err != nil {
-		log.Fatal(err)
+func MustNewQueue() *pulsarQueues {
+	q := &pulsarQueues{
+		group: service.NewServiceGroup(),
 	}
-
 	return q
 }
 

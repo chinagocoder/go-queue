@@ -12,7 +12,9 @@ func main() {
 
 	fmt.Println(c)
 
-	q := pq.MustNewQueue(c, pq.WithHandle(func(k, v string) error {
+	q := pq.MustNewQueue()
+
+	q.AddQueue(c, pq.WithHandle(func(k, v string) error {
 		fmt.Printf("=> %s\n", v)
 		return nil
 	}))
