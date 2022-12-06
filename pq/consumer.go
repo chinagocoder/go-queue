@@ -53,20 +53,20 @@ type (
 		metrics          *stat.Metrics
 	}
 
-	pulsarQueues struct {
+	PulsarQueues struct {
 		queues []queue.MessageQueue
 		group  *service.ServiceGroup
 	}
 )
 
-func MustNewQueue() *pulsarQueues {
-	q := &pulsarQueues{
+func MustNewQueue() *PulsarQueues {
+	q := &PulsarQueues{
 		group: service.NewServiceGroup(),
 	}
 	return q
 }
 
-func NewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) (*pulsarQueues, error) {
+func NewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) (*PulsarQueues, error) {
 	var options queueOptions
 	for _, opt := range opts {
 		opt(&options)
@@ -78,7 +78,7 @@ func NewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) (*pulsarQueue
 		c.Conns = 1
 	}
 
-	q := &pulsarQueues{
+	q := &PulsarQueues{
 		group: service.NewServiceGroup(),
 	}
 	for i := 0; i < c.Conns; i++ {
@@ -88,7 +88,7 @@ func NewQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) (*pulsarQueue
 	return q, nil
 }
 
-func (q *pulsarQueues) AddQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) error {
+func (q *PulsarQueues) AddQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) error {
 	var options queueOptions
 	for _, opt := range opts {
 		opt(&options)
@@ -152,14 +152,14 @@ func (q *pulsarQueue) Stop() {
 	logx.Close()
 }
 
-func (q *pulsarQueues) Start() {
+func (q *PulsarQueues) Start() {
 	for _, each := range q.queues {
 		q.group.Add(each)
 	}
 	q.group.Start()
 }
 
-func (q *pulsarQueues) Stop() {
+func (q *PulsarQueues) Stop() {
 	q.group.Stop()
 }
 

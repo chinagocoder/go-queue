@@ -24,10 +24,10 @@ type message struct {
 func main() {
 	pusher := pq.NewPusher(
 		[]string{
-			"114.115.255.244:6650",
+			"127.0.0.1:6650",
 		}, "topic1",
 	)
-	
+
 	for round := 0; round < 3; round++ {
 		count := rand.Intn(100)
 		m := message{
