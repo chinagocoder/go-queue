@@ -1,6 +1,6 @@
 # go-queue
 
-> Pulsar Pub/Sub framework. Reference: https://github.com/zeromicro/go-queue
+> golang pulsar 消息队列，参考: https://github.com/zeromicro/go-queue
 
 ## installation
 

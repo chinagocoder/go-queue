@@ -1,5 +1,5 @@
 // @Title  config.go
-// @Description  todo
+// @Description  配置
 // @Author  xushuai  2022/11/26 8:42 PM
 
 package pq
