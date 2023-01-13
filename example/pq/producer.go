@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/chinagocoder/go-queue/pq"
-	"github.com/zeromicro/go-zero/core/cmdline"
 	"math/rand"
 	"strconv"
 	"time"
@@ -24,8 +23,8 @@ type message struct {
 func main() {
 	pusher := pq.NewPusher(
 		[]string{
-			"127.0.0.1:6650",
-		}, "topic_message",
+			"192.168.1.101:6650",
+		}, "topic1",
 	)
 
 	ticker := time.NewTicker(time.Millisecond)
@@ -44,13 +43,16 @@ func main() {
 
 		t := time.Now().Add(10 * time.Second)
 
-		if _, err := pusher.Push(
+		messageId, err := pusher.Push(
 			context.Background(), []byte(strconv.FormatInt(time.Now().UnixNano(), 10)), body, pq.WithDeliverAt(t),
-		); err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(t.Format("2006-01-02 15:04:05"))
-	}
+		)
 
-	cmdline.EnterToContinue()
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Printf("%#v\n", messageId)
+			fmt.Println(t.Format("2006-01-02 15:04:05"))
+		}
+
+	}
 }

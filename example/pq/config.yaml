@@ -1,7 +1,7 @@
 Name: pulsar
 Brokers:
-  - 127.0.0.1:6650
-Topic: topic_message
-Conns: 1
+  - 192.168.1.101:6650
+Topic: topic1
+Conns: 2
 Processors: 1
-SubscriptionName: topic_message
+SubscriptionName: sub_topic1

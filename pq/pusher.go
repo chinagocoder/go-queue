@@ -26,7 +26,6 @@ type (
 		producer pulsar.Producer
 		client   pulsar.Client
 		topic    string
-		executor *executors.ChunkExecutor
 	}
 
 	callOptions struct {
@@ -78,6 +77,13 @@ type (
 		//     types, the messages will still be delivered immediately.
 		DeliverAt time.Time
 	}
+	MessageResult struct {
+		EntryID      int64
+		Serialize    []byte
+		BatchIdx     int32
+		LedgerID     int64
+		PartitionIdx int32
+	}
 
 	chunkOptions struct {
 		chunkSize     int
@@ -115,19 +121,6 @@ func NewPusher(addrs []string, topic string, opts ...PushOption) *Pusher {
 		topic:    topic,
 	}
 
-	pusher.executor = executors.NewChunkExecutor(
-		func(tasks []interface{}) {
-			for i := range tasks {
-				if _, err := pusher.producer.Send(
-					context.Background(), tasks[i].(*pulsar.ProducerMessage),
-				); err != nil {
-					logx.Error(err)
-				}
-			}
-
-		}, newOptions(opts)...,
-	)
-
 	return pusher
 }
 
@@ -142,7 +135,7 @@ func (p *Pusher) Name() string {
 }
 
 func (p *Pusher) Push(ctx context.Context, k, v []byte, opts ...CallOptions) (
-	interface{}, error) {
+	*MessageResult, error) {
 
 	op := new(callOptions)
 	op.message = new(Message)
@@ -164,17 +157,17 @@ func (p *Pusher) Push(ctx context.Context, k, v []byte, opts ...CallOptions) (
 		DeliverAt:           op.message.DeliverAt,
 	}
 
-	if p.executor == nil {
-		op.isSync = true
+	messageId, err := p.producer.Send(ctx, msg)
+	if err != nil {
+		return nil, err
 	}
-
-	if op.isSync {
-		id, err := p.producer.Send(ctx, msg)
-		return id, err
-	} else {
-		return nil, p.executor.Add(msg, len(v))
-
-	}
+	return &MessageResult{
+		EntryID:      messageId.EntryID(),
+		Serialize:    messageId.Serialize(),
+		BatchIdx:     messageId.BatchIdx(),
+		LedgerID:     messageId.LedgerID(),
+		PartitionIdx: messageId.PartitionIdx(),
+	}, nil
 }
 
 func WithChunkSize(chunkSize int) PushOption {
@@ -245,16 +238,5 @@ func WithOrderingKey(OrderingKey string) CallOptions {
 			panic(ErrNotSupport)
 		}
 		m.message.OrderingKey = OrderingKey
-	}
-}
-
-func WithSync() CallOptions {
-	return func(i interface{}) {
-		options, ok := i.(*callOptions)
-		if !ok {
-			panic(ErrNotSupport)
-		}
-
-		options.isSync = true
 	}
 }

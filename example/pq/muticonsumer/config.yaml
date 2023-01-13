@@ -1,11 +1,11 @@
 PulsarTopic1:
   Name: pulsar
   Brokers:
-    - 114.115.255.244:6650
-  Topic: topic1
+    - 192.168.1.101:6650
+  Topic: topic_message
   Conns: 1
   Processors: 1
-  SubscriptionName: topic1
+  SubscriptionName: topic_message
 
 PulsarTopic2:
   Name: pulsar
