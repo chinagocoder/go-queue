@@ -1,5 +1,5 @@
 // @Title  client.go
-// @Description  todo
+// @Description  客户端
 // @Author  xushuai  2023/1/14 3:59 PM
 
 package pq
