@@ -10,7 +10,7 @@ func main() {
 	var c pq.Conf
 	conf.MustLoad("config.yaml", &c)
 
-	fmt.Println(c)
+	fmt.Printf("%#v", c)
 
 	q := pq.MustNewQueue()
 	err := q.AddQueue(c, pq.WithHandle(func(k, v string) error {

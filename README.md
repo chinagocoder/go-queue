@@ -17,7 +17,6 @@ Pulsar Pub/Sub framework
 config.yaml
 
 ```yaml
-Name: pulsar
 Brokers:
   - 127.0.0.1:6650
 Topic: topic_message
@@ -76,10 +75,12 @@ type message struct {
 }
 
 func main() {
-	pusher := pq.NewPusher(
-		[]string{
-			"127.0.0.1:6650",
-		}, "topic_message",
+	pusher,err := pq.NewPusher(pq.Conf{
+			Brokers: []string{
+				"127.0.0.1:6650",
+			},
+			Topic: "topic2",
+		},
 	)
 
 	ticker := time.NewTicker(time.Millisecond)

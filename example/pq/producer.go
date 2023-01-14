@@ -21,11 +21,16 @@ type message struct {
 }
 
 func main() {
-	pusher := pq.NewPusher(
-		[]string{
-			"192.168.1.101:6650",
-		}, "topic1",
+	pusher, err := pq.NewPusher(pq.Conf{
+		Brokers: []string{
+			"127.0.0.1:6650",
+		},
+		Topic:      "topic1",
+		AuthName:   "token",
+		AuthParams: "{\"token\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.CNYN8h04Z_wJcvNssVhcyZKDlqvwOSxmkXeOy6WH8pM\"}",
+	},
 	)
+	fmt.Println(err)
 
 	ticker := time.NewTicker(time.Millisecond)
 	for round := 0; round < 3; round++ {

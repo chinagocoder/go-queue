@@ -22,10 +22,14 @@ type message struct {
 }
 
 func main() {
-	pusher := pq.NewPusher(
-		[]string{
-			"192.168.1.101:6650",
-		}, "topic1",
+	pusher, _ := pq.NewPusher(pq.Conf{
+		Brokers: []string{
+			"127.0.0.1:6650",
+		},
+		Topic:      "topic1",
+		AuthName:   "token",
+		AuthParams: "{\"token\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.CNYN8h04Z_wJcvNssVhcyZKDlqvwOSxmkXeOy6WH8pM\"}",
+	},
 	)
 
 	for round := 0; round < 3; round++ {
@@ -44,10 +48,15 @@ func main() {
 		}
 	}
 
-	pusher2 := pq.NewPusher(
-		[]string{
-			"114.115.255.244:6650",
-		}, "topic2",
+	pusher2, _ := pq.NewPusher(
+		pq.Conf{
+			Brokers: []string{
+				"127.0.0.1:6650",
+			},
+			Topic:      "topic2",
+			AuthName:   "token",
+			AuthParams: "{\"token\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.CNYN8h04Z_wJcvNssVhcyZKDlqvwOSxmkXeOy6WH8pM\"}",
+		},
 	)
 
 	for round := 0; round < 3; round++ {

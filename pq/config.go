@@ -5,10 +5,13 @@
 package pq
 
 type Conf struct {
-	Name             string
-	Brokers          []string
-	Topic            string
-	SubscriptionName string
-	Conns            int `json:",default=1"`
-	Processors       int `json:",default=8"`
+	Brokers           []string
+	ConnectionTimeout int64  `json:",optional"`
+	OperationTimeout  int64  `json:",optional"`
+	AuthName          string `json:",optional"`
+	AuthParams        string `json:",optional"`
+	Topic             string
+	SubscriptionName  string `json:",optional"`
+	Conns             int    `json:",default=1"`
+	Processors        int    `json:",default=1"`
 }

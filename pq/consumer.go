@@ -5,21 +5,13 @@
 package pq
 
 import (
-	"fmt"
 	"github.com/apache/pulsar-client-go/pulsar"
-	"log"
-	"strings"
-	"time"
-
-	_ "github.com/segmentio/kafka-go/gzip"
-	_ "github.com/segmentio/kafka-go/lz4"
-	_ "github.com/segmentio/kafka-go/snappy"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/queue"
 	"github.com/zeromicro/go-zero/core/service"
-	"github.com/zeromicro/go-zero/core/stat"
 	"github.com/zeromicro/go-zero/core/threading"
-	"github.com/zeromicro/go-zero/core/timex"
+	"log"
+	"time"
 )
 
 const (
@@ -39,7 +31,6 @@ type (
 		commitInterval time.Duration
 		queueCapacity  int
 		maxWait        time.Duration
-		metrics        *stat.Metrics
 	}
 
 	QueueOption func(*queueOptions)
@@ -50,7 +41,6 @@ type (
 		handler          ConsumeHandler
 		channel          chan pulsar.ConsumerMessage
 		consumerRoutines *threading.RoutineGroup
-		metrics          *stat.Metrics
 	}
 
 	PulsarQueues struct {
@@ -109,24 +99,23 @@ func (q *PulsarQueues) AddQueue(c Conf, handler ConsumeHandler, opts ...QueueOpt
 
 func newPulsarQueue(c Conf, handler ConsumeHandler, options queueOptions) *pulsarQueue {
 
-	url := fmt.Sprintf("pulsar://%s", strings.Join(c.Brokers, ","))
-	client, err := pulsar.NewClient(
-		pulsar.ClientOptions{
-			URL:               url,
-			ConnectionTimeout: 5 * time.Second,
-			OperationTimeout:  5 * time.Second,
-		},
-	)
+	// 初始化pulsar连接
+	client, err := NewClient(c)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	messageChannel := make(chan pulsar.ConsumerMessage)
-	consumer, err := client.Subscribe(
-		pulsar.ConsumerOptions{
-			Topic:            c.Topic,
-			Type:             pulsar.Shared,
-			SubscriptionName: c.SubscriptionName,
-			MessageChannel:   messageChannel,
-		},
-	)
+	consumerOptions := pulsar.ConsumerOptions{
+		Topic:            c.Topic,
+		Type:             pulsar.Shared,
+		SubscriptionName: c.SubscriptionName,
+		MessageChannel:   messageChannel,
+	}
+	if consumerOptions.SubscriptionName == "" {
+		consumerOptions.SubscriptionName = "sub_" + consumerOptions.Topic
+	}
+	consumer, err := client.Subscribe(consumerOptions)
 
 	if err != nil {
 		log.Fatal(err)
@@ -138,7 +127,6 @@ func newPulsarQueue(c Conf, handler ConsumeHandler, options queueOptions) *pulsa
 		handler:          handler,
 		channel:          messageChannel,
 		consumerRoutines: threading.NewRoutineGroup(),
-		metrics:          options.metrics,
 	}
 }
 
@@ -164,11 +152,7 @@ func (q *PulsarQueues) Stop() {
 }
 
 func (q *pulsarQueue) consumeOne(key, val string) error {
-	startTime := timex.Now()
 	err := q.handler.Consume(key, val)
-	q.metrics.Add(stat.Task{
-		Duration: timex.Since(startTime),
-	})
 	return err
 }
 func (q *pulsarQueue) startConsumers() {
@@ -208,12 +192,6 @@ func WithMaxWait(wait time.Duration) QueueOption {
 	}
 }
 
-func WithMetrics(metrics *stat.Metrics) QueueOption {
-	return func(options *queueOptions) {
-		options.metrics = metrics
-	}
-}
-
 type innerConsumeHandler struct {
 	handle ConsumeHandle
 }
@@ -231,8 +209,5 @@ func ensureQueueOptions(c Conf, options *queueOptions) {
 	}
 	if options.maxWait == 0 {
 		options.maxWait = defaultMaxWait
-	}
-	if options.metrics == nil {
-		options.metrics = stat.NewMetrics(c.Name)
 	}
 }

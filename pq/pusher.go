@@ -7,11 +7,8 @@ package pq
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/apache/pulsar-client-go/pulsar"
-	"github.com/zeromicro/go-zero/core/executors"
 	"github.com/zeromicro/go-zero/core/logx"
-	"strings"
 	"time"
 )
 
@@ -91,37 +88,33 @@ type (
 	}
 )
 
-func NewPusher(addrs []string, topic string, opts ...PushOption) *Pusher {
-	url := fmt.Sprintf("pulsar://%s", strings.Join(addrs, ","))
-	client, err := pulsar.NewClient(
-		pulsar.ClientOptions{
-			URL:               url,
-			ConnectionTimeout: 5 * time.Second,
-			OperationTimeout:  5 * time.Second,
-		},
-	)
+func NewPusher(c Conf) (*Pusher, error) {
+	// 初始化pulsar连接
+	client, err := NewClient(c)
 
 	if err != nil {
 		logx.Errorf("could not instantiate Pulsar client: %v", err)
+		return nil, err
 	}
 
 	producer, err := client.CreateProducer(
 		pulsar.ProducerOptions{
-			Topic: topic,
+			Topic: c.Topic,
 		},
 	)
 
 	if err != nil {
 		logx.Error(err)
+		return nil, err
 	}
 
 	pusher := &Pusher{
 		producer: producer,
 		client:   client,
-		topic:    topic,
+		topic:    c.Topic,
 	}
 
-	return pusher
+	return pusher, nil
 }
 
 func (p *Pusher) Close() error {
@@ -168,36 +161,6 @@ func (p *Pusher) Push(ctx context.Context, k, v []byte, opts ...CallOptions) (
 		LedgerID:     messageId.LedgerID(),
 		PartitionIdx: messageId.PartitionIdx(),
 	}, nil
-}
-
-func WithChunkSize(chunkSize int) PushOption {
-	return func(options *chunkOptions) {
-		options.chunkSize = chunkSize
-	}
-}
-
-func WithFlushInterval(interval time.Duration) PushOption {
-	return func(options *chunkOptions) {
-		options.flushInterval = interval
-	}
-}
-
-func newOptions(opts []PushOption) []executors.ChunkOption {
-	var options chunkOptions
-	for _, opt := range opts {
-		opt(&options)
-	}
-
-	var chunkOpts []executors.ChunkOption
-	if options.chunkSize > 0 {
-		chunkOpts = append(chunkOpts, executors.WithChunkBytes(options.chunkSize))
-	}
-
-	if options.flushInterval > 0 {
-		chunkOpts = append(chunkOpts, executors.WithFlushInterval(options.flushInterval))
-	}
-
-	return chunkOpts
 }
 
 func WithMessage(message Message) CallOptions {

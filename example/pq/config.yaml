@@ -1,7 +1,7 @@
 Name: pulsar
 Brokers:
-  - 192.168.1.101:6650
+  - 127.0.0.1:6650
+AuthName: token
+AuthParams: '{"token":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.CNYN8h04Z_wJcvNssVhcyZKDlqvwOSxmkXeOy6WH8pM"}'
 Topic: topic1
-Conns: 2
-Processors: 1
 SubscriptionName: sub_topic1
