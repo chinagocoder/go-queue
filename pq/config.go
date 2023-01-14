@@ -6,8 +6,8 @@ package pq
 
 type Conf struct {
 	Brokers           []string
-	ConnectionTimeout int64  `json:",optional"`
-	OperationTimeout  int64  `json:",optional"`
+	ConnectionTimeout int    `json:",optional"`
+	OperationTimeout  int    `json:",optional"`
 	AuthName          string `json:",optional"`
 	AuthParams        string `json:",optional"`
 	Topic             string

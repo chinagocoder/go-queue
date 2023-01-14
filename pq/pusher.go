@@ -117,6 +117,17 @@ func NewPusher(c Conf) (*Pusher, error) {
 	return pusher, nil
 }
 
+func NewPusherWithParam(adds []string, topic string, authName string, authParams string, connectionTimeout int, operationTimeout int) (*Pusher, error) {
+	return NewPusher(Conf{
+		Brokers:           adds,
+		Topic:             topic,
+		AuthName:          authName,
+		AuthParams:        authParams,
+		ConnectionTimeout: connectionTimeout,
+		OperationTimeout:  operationTimeout,
+	})
+}
+
 func (p *Pusher) Close() error {
 	p.producer.Close()
 	p.client.Close()
