@@ -15,3 +15,5 @@ import "github.com/chinagocoder/go-queue/pq"
 
 ## 使用
 参考example
+
+go-zero使用pulsar请参考 https://github.com/chinagocoder/go-zero-pulsar-demo
