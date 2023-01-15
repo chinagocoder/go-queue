@@ -1,0 +1,11 @@
+Brokers:
+  - 127.0.0.1:6650
+Topic: demo_topic
+SubscriptionName: sub_demo_topic
+# jwt
+#AuthName: token
+#AuthParams: '{"token":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.CNYN8h04Z_wJcvNssVhcyZKDlqvwOSxmkXeOy6WH8pM"}'
+
+# basic
+AuthName: basic
+AuthParams: '{"username":"superuser","password":"admin"}'
