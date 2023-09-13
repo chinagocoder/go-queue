@@ -1,7 +1,3 @@
-// @Title  consumer.go
-// @Description  消费者
-// @Author  xushuai  2022/11/26 8:43 PM
-
 package nsq
 
 import (

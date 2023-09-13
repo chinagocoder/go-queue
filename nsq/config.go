@@ -1,7 +1,3 @@
-// @Title  config.go
-// @Description  配置
-// @Author  xushuai  2022/11/26 8:42 PM
-
 package nsq
 
 import "time"
