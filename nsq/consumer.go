@@ -23,16 +23,10 @@ const (
 )
 
 type (
-	//ConsumeHandle func(msg Message) error
-	//
-	//ConsumeHandler interface {
-	//	HandleMessage(msg Message) error
-	//}
+	ConsumeHandle func(key, value string) error
 
-	Handler func(*Message) error
-
-	ConsumeHandler struct {
-		fnc Handler
+	ConsumeHandler interface {
+		Consume(key, value string) error
 	}
 
 	queueOptions struct {
@@ -46,7 +40,7 @@ type (
 	Queue struct {
 		c                Conf
 		consumer         *nsq.Consumer
-		handler          Handler
+		handler          ConsumeHandler
 		channel          chan nsq.Message
 		consumerRoutines *threading.RoutineGroup
 	}
@@ -57,16 +51,27 @@ type (
 	}
 )
 
-func (q *ConsumeHandler) HandleMessage(message *nsq.Message) error {
+type innerConsumeHandler struct {
+	handle ConsumeHandle
+}
+
+func (ch innerConsumeHandler) Consume(k, v string) error {
+	return ch.handle(k, v)
+}
+
+type nHandler struct {
+	fnc ConsumeHandle
+}
+
+func (h *nHandler) HandleMessage(message *nsq.Message) error {
 	msg := &Message{}
 	err := json.Unmarshal(message.Body, msg)
 	if err == nil {
-		q.fnc(msg)
+		err = h.fnc(msg.Key, string(msg.Payload))
 	} else {
-		q.fnc(&Message{Payload: message.Body})
+		err = h.fnc("", string(message.Body))
 	}
-
-	return nil
+	return err
 }
 
 func MustNewQueue() *Queues {
@@ -76,7 +81,7 @@ func MustNewQueue() *Queues {
 	return q
 }
 
-func (q *Queues) AddQueue(c Conf, handler Handler, opts ...QueueOption) error {
+func (q *Queues) AddQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) error {
 	var options queueOptions
 	for _, opt := range opts {
 		opt(&options)
@@ -97,7 +102,7 @@ func (q *Queues) AddQueue(c Conf, handler Handler, opts ...QueueOption) error {
 	return nil
 }
 
-func newNsqQueue(c Conf, handler Handler, options queueOptions) *Queue {
+func newNsqQueue(c Conf, handler ConsumeHandler, options queueOptions) *Queue {
 
 	// Instantiate a producer.
 	config := nsq.NewConfig()
@@ -123,7 +128,7 @@ func newNsqQueue(c Conf, handler Handler, options queueOptions) *Queue {
 
 	// Set the Handler for messages received by this Consumer. Can be called multiple times.
 	// See also AddConcurrentHandlers.
-	consumer.AddHandler(&ConsumeHandler{handler})
+	consumer.AddHandler(&nHandler{handler.Consume})
 	messageChannel := make(chan nsq.Message)
 
 	return &Queue{
@@ -186,11 +191,11 @@ func WithQueueCapacity(queueCapacity int) QueueOption {
 	}
 }
 
-//func WithHandle(handle ConsumeHandle) ConsumeHandler {
-//	return innerConsumeHandler{
-//		handle: ConsumeHandle,
-//	}
-//}
+func WithHandle(handle ConsumeHandle) ConsumeHandler {
+	return innerConsumeHandler{
+		handle: handle,
+	}
+}
 
 func WithMaxWait(wait time.Duration) QueueOption {
 	return func(options *queueOptions) {
