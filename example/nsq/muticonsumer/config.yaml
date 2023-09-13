@@ -1,0 +1,15 @@
+Topic1:
+  Brokers:
+    - gocoder.com.cn:32772
+  Topic: topic1
+  Conns: 1
+  Processors: 1
+  Channel: channel1
+
+Topic2:
+  Brokers:
+    - gocoder.com.cn:32772
+  Topic: topic2
+  Conns: 1
+  Processors: 1
+  Channel: channel2
