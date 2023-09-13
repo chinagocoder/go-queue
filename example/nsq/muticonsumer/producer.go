@@ -25,7 +25,7 @@ func main() {
 		Brokers: []string{
 			"gocoder.com.cn:32772",
 		},
-		Topic: "topic1",
+		Topic: "topic2",
 	},
 	)
 

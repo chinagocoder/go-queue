@@ -89,8 +89,6 @@ func (q *Queues) AddQueue(c Conf, handler ConsumeHandler, opts ...QueueOption) e
 
 	ensureQueueOptions(c, &options)
 
-	fmt.Println(options)
-
 	if c.Conns < 1 {
 		c.Conns = 1
 	}
@@ -118,9 +116,13 @@ func newNsqQueue(c Conf, handler ConsumeHandler, options queueOptions) *Queue {
 	if c.WriteTimeout > 0 {
 		config.WriteTimeout = c.WriteTimeout
 	}
-	js, _ := json.Marshal(config)
-	fmt.Println(string(js))
-	consumer, err := nsq.NewConsumer(c.Topic, c.Channel, config)
+
+	channel := c.Channel
+	if channel == "" {
+		channel = "channel"
+	}
+
+	consumer, err := nsq.NewConsumer(c.Topic, channel, config)
 	if err != nil {
 		fmt.Println("NewConsumer", err)
 		log.Fatal(err)
@@ -152,7 +154,6 @@ func (q *Queue) Stop() {
 
 func (q *Queues) Start() {
 	for _, each := range q.queues {
-		fmt.Printf("%#v\n", each)
 		q.group.Add(each)
 	}
 	q.group.Start()
@@ -169,9 +170,7 @@ func (q *Queues) Stop() {
 //	}
 func (q *Queue) startConsumers() {
 	for i := 0; i < q.c.Processors; i++ {
-		fmt.Println(i)
 		q.consumerRoutines.Run(func() {
-			fmt.Println(q.c.Brokers)
 			if err := q.consumer.ConnectToNSQDs(q.c.Brokers); err != nil {
 				logx.Errorf("Error on  error: %v", err)
 			}
