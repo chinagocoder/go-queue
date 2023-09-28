@@ -1,6 +1,6 @@
 Topic1:
   Brokers:
-    - gocoder.com.cn:32772
+    - 192.168.1.101:34150
   Topic: topic1
   Conns: 1
   Processors: 1
@@ -8,7 +8,7 @@ Topic1:
 
 Topic2:
   Brokers:
-    - gocoder.com.cn:32772
+    - 192.168.1.101:34150
   Topic: topic2
   Conns: 1
   Processors: 1

@@ -23,7 +23,7 @@ type message struct {
 func main() {
 	pusher, _ := nsq.NewPusher(nsq.Conf{
 		Brokers: []string{
-			"gocoder.com.cn:32772",
+			"192.168.1.101:34150",
 		},
 		Topic: "topic2",
 	},
@@ -44,7 +44,7 @@ func main() {
 			context.Background(),
 			[]byte(strconv.FormatInt(time.Now().UnixNano(), 10)),
 			body,
-			nsq.WithDeliverAt(time.Now().Add(time.Second*10)),
+			nsq.WithDeliverAfter(time.Second*0),
 		); err != nil {
 			fmt.Println(err)
 		}
