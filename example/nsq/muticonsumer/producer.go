@@ -40,11 +40,13 @@ func main() {
 
 		fmt.Println(string(body))
 
+		deliverAt := time.Now().Add(time.Second * 10).Unix()
+
 		if _, err := pusher.Push(
 			context.Background(),
 			[]byte(strconv.FormatInt(time.Now().UnixNano(), 10)),
 			body,
-			nsq.WithDeliverAfter(time.Second*0),
+			nsq.WithDeliverAt(time.Unix(deliverAt, 0)),
 		); err != nil {
 			fmt.Println(err)
 		}

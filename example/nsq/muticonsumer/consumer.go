@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/chinagocoder/go-queue/nsq"
-	"github.com/chinagocoder/go-queue/pq"
 	"github.com/zeromicro/go-zero/core/conf"
 )
 
@@ -20,11 +19,11 @@ func main() {
 
 	q := nsq.MustNewQueue()
 
-	q.AddQueue(c.Topic1, pq.WithHandle(func(k, v string) error {
+	q.AddQueue(c.Topic1, nsq.WithHandle(func(k, v string) error {
 		fmt.Printf("111111=> %s\n", v)
 		return nil
 	}))
-	q.AddQueue(c.Topic2, pq.WithHandle(func(k, v string) error {
+	q.AddQueue(c.Topic2, nsq.WithHandle(func(k, v string) error {
 		fmt.Printf("222222=> %s\n", v)
 		return nil
 	}))

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/nsqio/go-nsq"
 	"github.com/zeromicro/go-zero/core/logx"
 	"math/rand"
@@ -104,7 +103,6 @@ func (p *Pusher) Name() string {
 
 func (p *Pusher) Push(ctx context.Context, k, v []byte, opts ...CallOptions) (
 	*MessageResult, error) {
-	fmt.Println(string(v))
 	op := new(callOptions)
 	op.message = new(Message)
 	for _, opt := range opts {
@@ -119,15 +117,11 @@ func (p *Pusher) Push(ctx context.Context, k, v []byte, opts ...CallOptions) (
 		DeliverAfter: op.message.DeliverAfter,
 	}
 
-	fmt.Println(msg.Payload)
-
 	if msg.EventTime.IsZero() {
 		msg.EventTime = time.Now()
 	}
 
 	messageBody, _ := json.Marshal(msg)
-
-	fmt.Println(string(messageBody))
 
 	var err error
 	if msg.DeliverAfter > 0 {
